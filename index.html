@@ -1,0 +1,323 @@
+<html>
+  <body>
+    <p>Who went first?</p>
+    <table><tr><td id="first"></td></tr></table>
+    <p>Current map:</p>
+    <table id="game">
+    </table>
+    <p id="number-of-solutions"></p>
+    <table id="solution">
+    </table>
+  </body>
+  <style>
+table, table td {
+  border: 1px solid black;
+}
+table td {
+  width: 50px;
+  height: 50px;
+}
+  </style>
+  <script>
+
+var colors = [
+  '#ffffff',
+  '#2196f3',
+  '#f44336',
+  '#ffc107',
+  '#333333'
+]
+
+// Who went first btn
+var first = document.getElementById('first');
+first.state = 0;
+first.addEventListener('click', firstClickHandler);
+function firstClickHandler() {
+  first.state = (first.state + 1) % 3
+  rePaint();
+  doTheSearch();
+}
+
+// Create clickable tiles
+var tiles = [];
+var table = document.getElementById('game');
+for (var i = 0; i < 5; i ++) {
+  tiles[i] = [];
+  var tr = document.createElement('tr');
+  table.appendChild(tr);
+  for (var j = 0; j < 5; j ++) {
+    var td = document.createElement('td');
+    tiles[i][j] = td;
+    td.setAttribute('data-x', j);
+    td.setAttribute('data-y', i);
+    td.id = (i * 5) + j
+    td.addEventListener('click', clickHandler);
+    td.state = 0;
+    tr.appendChild(td);
+  }
+}
+function rePaint() {
+  first.setAttribute("style", "background-color: " + colors[first.state])
+  for (var i = 0; i < 5; i ++) {
+    for (var j = 0; j < 5; j ++) {
+      tiles[i][j].setAttribute("style", "background-color: " + colors[tiles[i][j].state]);
+    }
+  }
+}
+function drawSolution(solution) {
+  var sol = document.getElementById('solution');
+  sol.innerHTML = '';
+  for (var i = 0; i < 5; i ++) {
+    var tr = document.createElement('tr');
+    sol.appendChild(tr);
+    for (var j = 0; j < 5; j ++) {
+      var td = document.createElement('td');
+      td.setAttribute("style", "background-color: " + colors[solution[i][j]]);
+      tr.appendChild(td);
+    }
+  }
+}
+function flipTile(x, y) {
+  tiles[y][x].state = (tiles[y][x].state + 1) % 4
+}
+
+function doTheSearch() {
+  var matching = findMatchingCards();
+  document.getElementById('number-of-solutions').innerHTML = matching.length + ' possible solutions';
+  if (matching.length == 1) {
+    drawSolution(matching[0]);
+  } else {
+    document.getElementById('solution').innerHTML = ''
+  }
+}
+
+function clickHandler() {
+  var x = this.getAttribute('data-x');
+  var y = this.getAttribute('data-y');
+  flipTile(x, y);
+  rePaint();
+  doTheSearch();
+}
+
+function matchingRotations(rotations) {
+  var res = []
+  for (var r = 0; r < rotations.length; r ++) {
+    var rotation = rotations[r];
+    var matching = true;
+    for (var i = 0; i < 5; i ++) {
+      for (var j = 0; j < 5; j ++) {
+        if (tiles[i][j].state > 0 && tiles[i][j].state != rotation[i][j]) {
+          matching = false;
+          break;
+        }
+      }
+    }
+    if (matching) {
+      res.push(rotation);
+    }
+  }
+  return res;
+}
+
+function findMatchingCards() {
+  res = []
+  cards.forEach(function(card){
+    if (first.state > 0 && first.state != card.first) {
+      return;
+    }
+    var matches = matchingRotations(card.rotations)
+    for (var i = 0; i < matches.length; i ++) {
+      res.push(matches[i]);
+    }
+  })
+  return res;
+}
+
+// blue = 1, red = 2, neutral = 3, bomb = 4
+cards = [
+  {
+    'first': 1,
+    'tiles': [[1,3,2,1,2],[1,2,3,2,2],[1,2,1,4,3],[3,2,2,1,1],[3,3,3,1,1]]
+  },
+  {
+    'first': 1,
+    'tiles': [[1,3,1,2,2],[2,1,2,2,1],[3,1,4,3,3],[1,2,3,1,2],[1,3,1,2,3]]
+  },
+  {
+    'first': 1,
+    'tiles': [[2,3,4,3,1],[3,2,1,2,2],[3,1,2,1,2],[1,3,1,1,2],[3,2,3,1,1]]
+  },
+  {
+    'first': 2,
+    'tiles': [[1,2,2,3,2],[3,1,2,1,2],[1,1,2,3,3],[1,3,2,3,1],[2,4,3,1,2]]
+  },
+  {
+    'first': 2,
+    'tiles': [[4,3,2,1,1],[],[2,3,1,2,2],[3,2,2,3,2],[3,1,1,1,2]]
+  },
+  {
+    'first': 2,
+    'tiles': [[1,3,2,1,2],[4,1,1,1,2],[3,2,2,3,2],[2,1,3,1,2],[3,1,3,2,3]]
+  },
+  {
+    'first': 1,
+    'tiles': [[1,1,1,2,3],[2,3,2,2,2],[3,1,3,3,1],[1,2,3,2,4],[1,1,3,1,2]]
+  },
+  {
+    'first': 2,
+    'tiles': [[3,3,2,3,3],[2,2,1,1,1],[3,2,2,3,4],[1,2,1,2,2],[1,1,2,3,1]]
+  },
+  {
+    'first': 1,
+    'tiles': [[1,3,2,1,3],[2,2,1,3,4],[2,3,2,2,1],[1,1,1,1,3],[3,1,2,3,2]]
+  },
+  {
+    'first': 1,
+    'tiles': [[2,3,1,1,1],[2,1,1,2,2],[3,2,3,1,4],[1,3,3,1,3],[2,1,2,2,3]]
+  },
+  {
+    'first': 2,
+    'tiles': [[2,2,2,2,1],[1,3,1,3,3],[3,2,1,4,3],[1,1,3,1,2],[2,2,1,3,2]]
+  },
+  {
+    'first': 1,
+    'tiles': [[2,1,2,2,1],[3,1,2,3,3],[2,3,1,1,1],[3,1,3,1,2],[1,2,2,4,3]]
+  },
+  {
+    'first': 1,
+    'tiles': [[1,2,3,1,1],[2,3,1,2,2],[3,1,1,3,2],[2,4,3,3,2],[1,1,2,1,3]]
+  },
+  {
+    'first': 1,
+    'tiles': [[1,2,1,3,2],[2,3,3,4,1],[1,1,1,1,3],[3,2,3,1,2],[2,2,2,3,1]]
+  },
+  {
+    'first': 1,
+    'tiles': [[1,2,2,1,1],[3,1,3,1,2],[1,3,2,3,3],[2,2,1,1,3],[1,2,2,3,4]]
+  },
+  {
+    'first': 2,
+    'tiles': [[2,1,2,2,3],[3,1,3,1,3],[2,2,3,2,2],[2,2,1,1,1],[3,3,1,1,4]]
+  },
+  {
+    'first': 2,
+    'tiles': [[1,3,2,1,1],[3,2,2,2,1],[3,1,3,1,4],[3,2,3,2,2],[1,2,2,1,3]]
+  },
+  {
+    'first': 1,
+    'tiles': [[1,3,3,2,2],[1,3,1,1,1],[2,4,3,2,1],[2,1,2,1,3],[2,3,3,1,2]]
+  },
+  {
+    'first': 2,
+    'tiles': [[1,3,3,1,1],[2,3,2,3,3],[1,2,1,1,2],[1,2,4,2,2],[1,3,3,2,2]]
+  },
+  {
+    'first': 1,
+    'tiles': [[2,3,1,1,2],[3,2,1,2,3],[1,2,1,3,2],[3,1,2,1,1],[3,4,1,3,2]]
+  },
+  {
+    'first': 1,
+    'tiles': [[1,3,1,3,2],[2,1,2,1,1],[3,3,4,2,3],[2,1,2,2,1],[2,1,3,1,3]]
+  },
+  {
+    'first': 2,
+    'tiles': [[2,2,1,3,1],[1,3,3,1,3],[3,2,2,1,2],[2,2,2,2,3],[3,1,1,4,1]]
+  },
+  {
+    'first': 1,
+    'tiles': [[2,3,1,3,4],[1,1,2,2,1],[2,1,3,1,3],[1,2,1,3,3],[3,2,2,2,1]]
+  },
+  {
+    'first': 2,
+    'tiles': [[2,1,3,3,1],[3,1,2,2,2],[1,2,1,1,4],[2,3,1,2,3],[2,1,3,3,2]]
+  },
+  {
+    'first': 2,
+    'tiles': [[1,1,1,2,2],[2,4,3,2,2],[1,3,3,3,1],[3,1,2,3,1],[2,1,2,2,3]]
+  },
+  {
+    'first': 1,
+    'tiles': [[3,1,2,3,2],[2,1,2,2,3],[2,1,2,1,1],[4,3,3,1,1],[3,1,2,3,1]]
+  },
+  {
+    'first': 1,
+    'tiles': [[2,1,1,1,1],[3,2,2,2,3],[2,3,3,2,3],[1,4,1,1,1],[3,2,2,1,3]]
+  },
+  {
+    'first': 2,
+    'tiles': [[3,1,2,3,1],[2,3,3,2,2],[3,2,4,1,1],[2,2,2,1,3],[1,1,3,1,2]]
+  },
+  {
+    'first': 1,
+    'tiles': [[2,1,2,1,3],[3,1,2,3,2],[3,2,2,4,1],[2,3,1,3,1],[3,1,1,2,1]]
+  },
+  {
+    'first': 2,
+    'tiles': [[3,2,1,2,2],[1,3,1,3,4],[3,2,1,2,3],[1,3,2,1,2],[3,1,1,2,2]]
+  },
+  {
+    'first': 1,
+    'tiles': [[2,2,1,2,3],[1,2,3,3,1],[1,1,1,3,1],[1,3,2,3,2],[2,4,1,2,3]]
+  },
+  {
+    'first': 2,
+    'tiles': [[3,2,1,3,1],[2,2,1,2,2],[1,1,3,3,3],[1,3,4,2,1],[2,1,3,2,2]]
+  },
+  {
+    'first': 2,
+    'tiles': [[2,3,2,3,3],[2,3,1,1,3],[2,2,2,3,1],[1,1,1,4,2],[3,1,2,1,2]]
+  },
+  {
+    'first': 2,
+    'tiles': [[2,2,2,3,3],[1,3,3,1,2],[1,2,4,1,1],[3,2,2,1,3],[2,1,1,2,3]]
+  },
+  {
+    'first': 2,
+    'tiles': [[2,1,3,3,1],[3,2,2,3,1],[3,1,1,3,2],[1,2,1,4,3],[1,2,2,3,2]]
+  },
+  {
+    'first': 1,
+    'tiles': [[1,2,4,1,3],[3,3,2,2,1],[3,1,2,2,1],[1,3,2,1,3],[2,1,1,2,3]]
+  },
+  {
+    'first': 1,
+    'tiles': [[1,2,1,3,4],[3,3,2,2,3],[2,1,1,1,2],[2,3,2,3,1],[1,2,1,1,3]]
+  },
+  {
+    'first': 2,
+    'tiles': [[3,3,2,1,2],[2,2,2,1,4],[1,3,2,3,3],[3,1,1,1,2],[1,1,2,2,3]]
+  },
+  {
+    'first': 2,
+    'tiles': [[1,2,1,3,1],[3,1,1,2,2],[2,2,3,1,1],[1,3,2,2,3],[3,4,2,2,3]]
+  },
+  {
+    'first': 2,
+    'tiles': [[3,1,3,2,1],[2,3,3,2,2],[2,1,2,3,1],[1,3,1,2,1],[4,2,1,3,2]]
+  }
+]
+
+// Add all rotations to cards
+function rotate(mx) {
+  var res = [[],[],[],[],[]];
+  for (var i = 0; i < 5; i ++) {
+    for (var j = 0; j < 5; j ++) {
+      res[i][j] = mx[j][4-i];
+    }
+  }
+  return res;
+}
+
+for (var i = 0; i < cards.length; i ++) {
+  var card = cards[i]
+  card.num = i;
+  var ts = card.tiles;
+  card.rotations = [ts];
+  for (var j = 0; j < 3; j ++) {
+    ts = rotate(ts);
+    card.rotations.push(ts);
+  }
+}
+
+  </script>
+</html>
