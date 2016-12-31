@@ -1,5 +1,6 @@
 # How to cheat and avoid cheaters in Codenames
 This little project demonstrates how easy it is to cheat in Codenames (the board game).
+See it live: https://durfi.github.io/codenames/
 
 Due to the small number of predefined secret maps, it is pretty easy to guess the the
 current map after a few rounds of the game.
